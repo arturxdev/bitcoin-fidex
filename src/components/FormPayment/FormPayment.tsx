@@ -13,7 +13,7 @@ const FormPayment = ({ generateInvoice }: { generateInvoice: (amount: number) =>
       <div className="my-9  w-full flex justify-center">
         <div>
           <label htmlFor="" className="text-gray-400 block">Monto</label>
-          <input type="number" value={amount} onChange={changeAmount} className="border-b-2 border-gray-300 w-full" />
+          <input type="number" value={amount} onChange={changeAmount} className="border-b-2 text-black border-gray-300 w-full" />
         </div>
       </div>
       <div className="text-center">
