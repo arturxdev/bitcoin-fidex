@@ -15,7 +15,7 @@ const Login = ({ signIn }: any) => {
       <div className="my-9  w-3/4 m-auto">
         <div>
           <label htmlFor="" className="text-gray-400 block">Usuario</label>
-          <input type="email" value={email} onChange={changeAmount} className="border-b-2 py-1 px-2 text-red border-gray-300 w-full" />
+          <input placeholder="test@test.com" type="email" value={email} onChange={changeAmount} className="border-b-2 py-1 px-2 text-red placeholder:text-slate-400  border-gray-300 w-full" />
         </div>
         <div className="mt-10">
           <label htmlFor="" className="text-gray-400 block">Password</label>
