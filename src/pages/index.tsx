@@ -10,7 +10,7 @@ import ErrorPayment from '@/components/ErrorPayment/ErrorPayment';
 const inter = Inter({ subsets: ['latin'] })
 export default function Home() {
 
-  const [invoice, setInvoice] = useState({})
+  const [invoice, setInvoice] = useState<any>({})
   const [status, setStatus] = useState(0)
 
   function setTimeoutAsync(timeout: number) {

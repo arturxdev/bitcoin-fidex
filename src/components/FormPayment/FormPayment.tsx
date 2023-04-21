@@ -1,9 +1,9 @@
 import { useState } from "react"
 import Image from 'next/image'
 
-const FormPayment = ({ generateInvoice }) => {
+const FormPayment = ({ generateInvoice }: { generateInvoice: (amount: number) => any }) => {
   const [amount, setAmount] = useState(0)
-  const changeAmount = (e) => { setAmount(e.target.value) }
+  const changeAmount = (e: any) => { setAmount(e.target.value) }
   return (
     <div className="lg:w-1/3 w-full border-solid border-2 border-gray-300 px-7 py-12  rounded-md bg-white drop-shadow-md">
       <div className="flex justify-center">

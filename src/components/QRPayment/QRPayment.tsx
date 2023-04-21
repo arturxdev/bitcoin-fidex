@@ -1,8 +1,8 @@
 import QRCode from "react-qr-code";
 import Countdown from 'react-countdown';
 
-const QRPayment = ({ bolt11, setStatus, status }) => {
-  const renderer = ({ hours, minutes, seconds, completed }) => {
+const QRPayment = ({ bolt11, setStatus, status }: any) => {
+  const renderer = ({ hours, minutes, seconds, completed }: any) => {
     if (completed) {
       if (status == 1) setStatus(0)
     } else {
