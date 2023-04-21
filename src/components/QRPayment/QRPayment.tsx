@@ -6,7 +6,7 @@ const QRPayment = ({ bolt11, setStatus, status }: any) => {
     if (completed) {
       if (status == 1) setStatus(0)
     } else {
-      return <span style={{ fontSize: "40px" }}>{minutes}:{seconds}</span>;
+      return <span style={{ fontSize: "40px", color: "black" }}>{minutes}:{seconds}</span>;
     }
   };
 
