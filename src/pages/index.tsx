@@ -1,17 +1,20 @@
 import { Inter } from 'next/font/google'
+import dayjs from 'dayjs'
 import Image from 'next/image'
 import FormPayment from '@/components/FormPayment/FormPayment'
 import QRPayment from '@/components/QRPayment/QRPayment'
 import { useEffect, useState } from 'react';
 import SuccessPayment from '@/components/SuccessPayment/SuccessPayment';
 import ErrorPayment from '@/components/ErrorPayment/ErrorPayment';
+import Login from '@/components/Login/Login';
 
 
 const inter = Inter({ subsets: ['latin'] })
 export default function Home() {
 
   const [invoice, setInvoice] = useState<any>({})
-  const [status, setStatus] = useState(0)
+  const [token, setToken] = useState<any>({})
+  const [status, setStatus] = useState(4)
 
   function setTimeoutAsync(timeout: number) {
     return new Promise(resolve => {
@@ -21,48 +24,114 @@ export default function Home() {
 
   useEffect(() => {
     if (status == 1) checkPayment(invoice.invoice.bolt11)
+    if (!token) setStatus(4)
   }, [status]);
 
-  const token = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2ODIwMzUzMTIsIklEIjoiIiwiVHlwZSI6ImFjY2VzcyIsIlVzZXJJRCI6IjM0NjMzYzk0LTU5NWYtNDNiYi1iYmE1LTNlNzc5ZDA1MjNkZiIsIlBlcm1pc3Npb25zIjpudWxsLCJQb29sIjoiSUJFWF9IVUIifQ.nEytqgU3ITc6mscrtf29uQxlLyB-FIi0ljKPoXpGv5yVUwujOZNk2uou5sw97XRERqnqUrBpHQQ0ezsgkYqNHNgxchdsCOuJkQq13EUoVHRK6UgjEM19brVegMRL44dGAx6wOZWHQ0EqtXGfi4iTjGkzsmXLiA5UnCZe52Huejqycz7LCI8LkvK3TXH1aisbp8QTOArYdQEEtFTLpGbmorc4ny8C5Ad7LYZ7jyTL6UgOHutchE19-D8_-J3caU9fimecKZQE0uxK4yWZNmdgx1-VW6Ul4SFXRzaKNBF9IrMDUbFqseF9-ONQVL3npMSfMmwXGxBq-NxK9vfzzr_kZdCOReaeRxChHQ_iuGUTI0alAjdYLBtgNY5MEvOuN25le-XDg07pOAV8Gwghq4ztZIGe8hyUdf5werrV7WBkz7F6dSVLBtxfSFCbnpXX-Fn00g7oF4ehQTMtw964LdReSHw6JW91o3DPCnazJ-A2HhhbGlOfwrfToki_5F7rwlXlviZG60cv5-pktygw89QXaYrsNppr1w5bdGk_rszKKjUTe7TGRXA7f7hqockg1KCtosxHYZ28pe3GDv4M9kKC90l8zMjF5itstDj-i61YWkxQ8alBaJsAMn2aaSNSEJGP5VREmHckllfB2ACibswzlumpimJcgKMFUQSoGUDQ2eQ'
-
   const generateInvoice = async (amount: number) => {
-    const options = {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        Authorization: token
-      },
-      body: JSON.stringify({
-        expiration: 120,
-        amount: amount * 1000,
-        accountId: 'ca37346a-9ba7-4f49-9656-cc2c920f8a7d'
-      })
-    };
+    try {
 
-    const response = await fetch('https://ibexhub.ibexmercado.com/v2/invoice/add', options)
-    const invoice = await response.json()
-    setInvoice(invoice)
-    setStatus(1)
+      refreshToken()
+      const options = {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          Authorization: token.accessToken
+        },
+        body: JSON.stringify({
+          expiration: 120,
+          amount: amount * 1000,
+          accountId: 'ca37346a-9ba7-4f49-9656-cc2c920f8a7d'
+        })
+      };
+
+      const response = await fetch('https://ibexhub.ibexmercado.com/v2/invoice/add', options)
+      const invoice = await response.json()
+      setInvoice(invoice)
+      setStatus(1)
+    } catch (error) {
+      console.log(error)
+      setStatus(4)
+    }
+  }
+
+  const refreshToken = async () => {
+    try {
+      if (!token) {
+        setStatus(4)
+      }
+      if (!dayjs(token.accessTokenExpiresAt).isAfter(dayjs())) {
+        return
+      }
+      console.log("refresh token")
+      const options = {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          Authorization: token.accessToken
+        },
+        body: JSON.stringify({
+          refreshToken: token.refreshToken,
+        })
+      };
+
+      const response = await fetch('https://ibexhub.ibexmercado.com/auth/refresh-access-token', options)
+      const logged = await response.json()
+      console.log(logged)
+      setToken(logged)
+    } catch (error) {
+      console.log(error)
+      setStatus(4)
+    }
+  }
+  const login = async (email: string, password: string) => {
+    try {
+      const options = {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          Authorization: token.accessToken
+        },
+        body: JSON.stringify({
+          email,
+          password
+        })
+      };
+
+      const response = await fetch('https://ibexhub.ibexmercado.com/auth/signin', options)
+      const logged = await response.json()
+      console.log(logged)
+      setToken(logged)
+      setStatus(0)
+    } catch (error) {
+      console.log(error)
+    }
   }
 
   const checkPayment = async (bolt11: string) => {
-    const options = {
-      method: 'GET',
-      headers: {
-        accept: 'application/json',
-        Authorization: token
+    try {
+      refreshToken()
+      const options = {
+        method: 'GET',
+        headers: {
+          accept: 'application/json',
+          Authorization: token.accessToken
+        }
+      };
+      while (status == 1) {
+        const response = await fetch(`https://ibexhub.ibexmercado.com/invoice/from-bolt11/${bolt11}`, options)
+        const status = await response.json()
+        await setTimeoutAsync(1500)
+        if (status.state.name == 'SETTLED') {
+          setStatus(2)
+          return
+        }
       }
-    };
-    while (status == 1) {
-      const response = await fetch(`https://ibexhub.ibexmercado.com/invoice/from-bolt11/${bolt11}`, options)
-      const status = await response.json()
-      await setTimeoutAsync(1500)
-      if (status.state.name == 'SETTLED') {
-        setStatus(2)
-        return
-      }
-
+    } catch (error) {
+      console.log(error)
+      setStatus(4)
     }
   }
   const drawComponent = () => {
@@ -75,6 +144,8 @@ export default function Home() {
         return <SuccessPayment setStatus={setStatus} />
       case 3:
         return <ErrorPayment setStatus={setStatus} />
+      case 4:
+        return <Login signIn={login} />
       default:
         return <FormPayment generateInvoice={generateInvoice} />
     }
